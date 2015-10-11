@@ -9,6 +9,13 @@ import static spark.Spark.*;
 
 public class Main 
 {
+	static int getHerokuAssignedPort() {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (processBuilder.environment().get("PORT") != null) {
+            return Integer.parseInt(processBuilder.environment().get("PORT"));
+        }
+        return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
+    }
     public static String crawl(String url) throws ResponseException
     {
     	String data = "";
@@ -37,7 +44,7 @@ public class Main
 	public static void main(String[] args) throws JauntException 
     {        
      // TODO Auto-generated method stub
-	    setPort(80);	    	    
+		port(getHerokuAssignedPort());	    	    
 	    get("/link", new Route() {
 			public Object handle(Request req, Response res) throws Exception {  return crawl("  "+req.queryParams("url"));}
 		});
