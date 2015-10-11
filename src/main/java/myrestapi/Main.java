@@ -16,9 +16,9 @@ public class Main
         }
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
     }
-    public static String crawl(String url) throws ResponseException
+    public static String crawl(String url) throws ResponseException, JauntException
     {
-    	String data = "";
+    	String data = "",skills="",courses="";
     	UserAgent userAgent = new UserAgent();      //create new userAgent (headless browser)
 	    userAgent.settings.autoSaveAsHTML = true;
 	    //userAgent.visit("https://www.linkedin.com/in/dhvanivora");       //visit google
@@ -34,17 +34,52 @@ public class Main
 	    Elements links = userAgent.doc.findEvery("<div id=skills-item>").findEach("<a>");   //find search result links
 	    Elements links1 = userAgent.doc.findEvery("<div id=courses-view>").findEach("<li>");
 	    Elements links2 = userAgent.doc.findEvery("<div id=background-education>").findEach("<li>"); 
-	    for(Element link : links) data+= link.getText()+"\n";
+        System.out.println("{");
+        data += "{";
+	    
+	   // System.out.println("\"name\":\""+ userAgent.doc.findFirst("<span class=full-name>").getText()+"\","+"\n");
+	    data += "\"name\":\""+ userAgent.doc.findFirst("<span class=full-name>").getText()+"\","+"\n";
+	   //System.out.print("\"skills\": [");
+	    data+="\"skills\": [\n";
+	    for(Element link : links) 
+	    {
+	    	if(!link.getText().trim().equals(""))
+	    	{
+	    	skills +="\""+link.getText().trim()+"\",";
+	    	}
 	    	
-	    	//System.out.println(link.getText());     //print results
-	    for(Element link : links1) data+= link.getText()+"\n";//System.out.println(link.getText());     //print results
+	    	
+	    }  
+	    //System.out.print(skills.substring(0, skills.length()-1)); 
+	    data += skills.substring(0, skills.length()-1)+"\n";
+	    //print results
+	    //System.out.println("],");
+	    data +="],";
+	    //System.out.print("\"courses\": [");
+	    data +="\"courses\": [";
+	    courses+=" ";
+	   for(Element link : links1)
+		   {
+		   if(!link.getText().trim().equals(""))
+	    	{
+		   courses +="\""+link.getText().trim()+"\",";
+	    	}
+		   //System.out.println(link.getText());    
+		   }//print results
+	   //System.out.print(courses.substring(0, courses.length()-1)); 
+	   data +=courses.substring(0, courses.length()-1)+"\n";
+	   //System.out.println("]");
+	   data+="]\n";
+	   //System.out.println("}\n\n");
+	   data+="}\n\n";
 	    return data ;
     }
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws JauntException 
     {        
      // TODO Auto-generated method stub
-		port(getHerokuAssignedPort());	    	    
+		//port(getHerokuAssignedPort());	    	    
+		//port(80);
 	    get("/link", new Route() {
 			public Object handle(Request req, Response res) throws Exception {  return crawl("  "+req.queryParams("url"));}
 		});
